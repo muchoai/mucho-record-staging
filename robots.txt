@@ -1,0 +1,9 @@
+User-agent: *
+Disallow: /
+
+# This is the STAGING copy of Mucho — The Record.
+# It is intentionally fully disallowed so crawlers don't index this
+# temporary URL as the canonical page. The real robots.txt (allowing
+# OAI-SearchBot and everything else) is specified in
+# mucho-record-build-spec.docx, Task 3, and belongs on wearemucho.com
+# once this page moves there.
