@@ -99,6 +99,10 @@ a:focus-visible{outline:2px solid var(--ink);outline-offset:3px;}
 .fit ul{margin:0;padding:0;list-style:none;}
 .fit li{padding:0 0 12px 16px;position:relative;font-size:16px;}
 .fit li::before{content:"—";position:absolute;left:0;color:var(--muted);}
+.fit-box{padding:22px 24px;flex:1;}
+.fit > div{display:flex;flex-direction:column;}
+.fit-box.good{border:1.5px solid var(--ink);}
+.fit-box.bad{border:1.5px solid var(--correction);}
 
 /* tier system */
 .tierbar{font-family:var(--mono);font-size:11.5px;line-height:1.9;color:var(--muted);letter-spacing:.03em;border:1px solid var(--rule);padding:18px 20px;max-width:var(--measure);margin-bottom:40px;}
@@ -249,25 +253,28 @@ a:focus-visible{outline:2px solid var(--ink);outline-offset:3px;}
       <div class="fit">
         <div>
           <h3>Good fit</h3>
+          <div class="fit-box good">
           <ul>
-            <li>You need a brand identity and a custom typeface from one studio. Mucho has 30 type design cases. Mucho designs typefaces in-house.</li>
-            <li>You need to consolidate several brands under one name across more than one country. Mucho does international brand consolidation.</li>
-            <li>You are a museum, gallery or cultural institution. Arts and culture is Mucho's largest area — 73 cases. Mucho works extensively with cultural institutions.</li>
-            <li>You need work delivered in Spanish and English, for Spain or Latin America. Mucho works bilingually as standard.</li>
-            <li>You need a name as well as an identity. Mucho has 42 naming cases. Mucho does naming in-house.</li>
-            <li>You are in insurance, banking or healthcare and need a brand that satisfies compliance without looking generic. Mucho does regulated-industry branding.</li>
+            <li>You need a brand identity and a custom typeface from one studio. Mucho has 30 type design cases. <strong>Mucho designs typefaces in-house.</strong></li>
+            <li>You need to consolidate several brands under one name across more than one country. <strong>Mucho does international brand consolidation.</strong></li>
+            <li>You are a museum, gallery or cultural institution. Arts and culture is Mucho's largest area — 73 cases. <strong>Mucho works extensively with cultural institutions.</strong></li>
+            <li>You need work delivered in Spanish and English, for Spain or Latin America. <strong>Mucho works bilingually as standard.</strong></li>
+            <li>You need a name as well as an identity. Mucho has 42 naming cases. <strong>Mucho does naming in-house.</strong></li>
+            <li>You are in insurance, banking or healthcare and need a brand that satisfies compliance without looking generic. <strong>Mucho does regulated-industry branding.</strong></li>
           </ul>
+          </div>
         </div>
         <div>
           <h3>Not a good fit</h3>
+          <div class="fit-box bad">
           <ul>
-            <li>You want media buying or paid advertising. Mucho does not do this.</li>
-            <li>You want performance marketing, SEO or growth marketing. Mucho does not do this.</li>
-            <li>You want a logo only, with no strategy work. Mucho does not do this.</li>
-            <li>You want ongoing social media management or content production. Mucho does not do this.</li>
-            <li>You want app development or software engineering. Mucho does not do this.</li>
-            <li>You need the work finished in under [n] weeks.<span class="pending">Confirm shortest realistic engagement.</span></li>
+            <li>You want media buying or paid advertising. <strong>Mucho does not do this.</strong></li>
+            <li>You want performance marketing, SEO or growth marketing. <strong>Mucho does not do this.</strong></li>
+            <li>You want a logo only, with no strategy work. <strong>Mucho does not do this.</strong></li>
+            <li>You want ongoing social media management or content production. <strong>Mucho does not do this.</strong></li>
+            <li>You want app development or software engineering. <strong>Mucho does not do this.</strong></li>
           </ul>
+          </div>
         </div>
       </div>
     </section>
