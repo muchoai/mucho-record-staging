@@ -1,0 +1,33 @@
+{
+  "phase": "github",
+  "pages": {
+    "en": {
+      "file": "index.html",
+      "lastmod": "2026-10-21"
+    },
+    "es": {
+      "file": "es/index.html",
+      "lastmod": "2026-10-22"
+    },
+    "ca": {
+      "file": "ca/index.html",
+      "lastmod": "2026-10-22"
+    }
+  },
+  "x_default": "en",
+  "github": {
+    "en": "https://muchoai.github.io/mucho-record-staging/",
+    "es": "https://muchoai.github.io/mucho-record-staging/es/",
+    "ca": "https://muchoai.github.io/mucho-record-staging/ca/"
+  },
+  "official": {
+    "en": null,
+    "es": null,
+    "ca": null,
+    "sitemap": null,
+    "robots": "https://wearemucho.com/robots.txt",
+    "confirmed_by": null,
+    "confirmed_on": null
+  },
+  "approval": null
+}

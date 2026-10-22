@@ -1,9 +1,6 @@
+# Mucho — The Record (GitHub Pages copy)
+# Crawlers read robots.txt only at the host root (https://muchoai.github.io/robots.txt).
+# This file, at /mucho-record-staging/robots.txt, has no effect on crawling.
+# It is kept non-blocking so it stays safe if this site is ever served from its own domain.
 User-agent: *
-Disallow: /
-
-# This is the STAGING copy of Mucho — The Record.
-# It is intentionally fully disallowed so crawlers don't index this
-# temporary URL as the canonical page. The real robots.txt (allowing
-# OAI-SearchBot and everything else) is specified in
-# mucho-record-build-spec.docx, Task 3, and belongs on wearemucho.com
-# once this page moves there.
+Allow: /

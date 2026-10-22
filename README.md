@@ -1,37 +1,35 @@
-# Mucho — The Record (staging package)
+# Mucho — The Record
 
-This is a self-contained static site, ready to deploy anywhere, independent of Craft CMS. Purpose: get it live at a real URL now for testing, hand off to wearemucho.com when CMS access is available.
+Static HTML, served by GitHub Pages from `main` (root folder). No build step: what is committed is what is published, within about a minute of a push.
 
-## What's in this folder
-- `index.html` — the full record page (from `mucho-record-full.html`), with one addition: a `noindex, nofollow` meta tag so it doesn't get indexed at a temporary URL. **Remove that meta tag when this moves to `wearemucho.com/record`.**
-- `robots.txt` — fully disallows crawling on this staging URL, as a second layer behind the noindex tag. **Replace with the production robots.txt in `mucho-record-build-spec.docx` (Task 3) at handoff.**
+Live: https://muchoai.github.io/mucho-record-staging/ (EN) · `/es/` (ES) · `/ca/` (CA)
 
-## Deploying this now (no code required)
-Any static host works since there's no build step — it's one HTML file. Two easy options:
+## Current state
+- **Indexed by Google.** No `noindex` anywhere. Do not add one: it would remove the page from Google.
+- **Canonical phase: `github`.** Each page's canonical points to its own GitHub URL; hreflang links the three languages to each other; `sitemap.xml` lists the three GitHub URLs.
+- `google21b31cba6da2b201.html` is the Search Console verification file. **Never delete or rename it.**
+- `robots.txt` here has no effect: crawlers only read `https://muchoai.github.io/robots.txt` (the host root). It is kept allow-all so it stays safe if this site is ever served from its own domain.
 
-**Netlify Drop** (fastest, free)
-1. Go to https://app.netlify.com/drop
-2. Drag this whole folder onto the page
-3. You get a live URL like `random-name-123.netlify.app` instantly
+## Source of truth
+This repo's `main` is the only master copy of the page. Start every editing session with `git pull`. HTML copies saved in chats, zips or project docs are reference only: copying one over `index.html` can silently undo earlier fixes (this happened in commit `1d7d811`).
 
-**GitHub Pages** (if you already use GitHub)
-1. Create a new repo, upload these files
-2. Repo Settings → Pages → deploy from the `main` branch, root folder
-3. Live at `yourusername.github.io/reponame`
+## Before every push
+```
+python3 tools/record_check.py
+```
+- `technical` group: canonical, hreflang, sitemap, robots meta, links, structure. Must have 0 FAIL.
+- `content` group: fact guards (not-clients list vs JSON-LD, client contradictions, approved spellings). Must have 0 FAIL for any content change.
 
-Either way: the page will be live and clickable, but marked "don't index me" — safe to share as a link for review/testing without it competing with the eventual real page in search results.
+After a push: `python3 tools/record_check.py --live --expect-deployed`.
 
-## What's still needed before this can be the real, live page
-Per `mucho-record-build-spec.docx`, four things happen only once someone has Craft CMS access:
-1. Footer link to `/record` added sitewide
-2. Page actually served at `wearemucho.com/record` (ideally as a Twig template — see build spec Task 2, Option A)
-3. Production `robots.txt` updated to allow `OAI-SearchBot`
-4. `/record` added to the SEOmatic-managed sitemap
+## Canonical phases
+URLs are managed by `tools/set_phase.py` and `tools/record-urls.json`. Do not edit the `record-urls` block in the page heads by hand.
+- `python3 tools/set_phase.py github` — current phase.
+- `official` — only once the official wearemucho.com pages exist with equivalent content in each language. It requires the confirmed official URLs in `tools/record-urls.json`, a passing `tools/record_check.py --official-preflight`, and `--approved-by NAME --date YYYY-MM-DD`. It then points each GitHub page's canonical at the matching same-language official page and retires `sitemap.xml`. The GitHub copy stays public: no redirect, no `noindex`.
 
-None of that is blocked by this staging deploy — this just gets the page live and testable in the meantime.
+## Rollback
+- Undo one commit: `git revert <sha>` then `git push`.
+- Restore the version indexed on 22 Oct 2026: `git checkout record-indexed-2026-10-22 -- .`, commit, push.
 
-## Also still pending (content, not deployment)
-Founding year, office addresses, founder quotes, award record links, FC Barcelona scope, corrections email, Wikidata entry, Clutch listing, engagement model statement — all marked in amber on the page itself. See `mucho-record-design-spec.docx` for the full sign-off list.
-
-## Not included yet
-Spanish version (`/es/registro`). Per the build spec, that's built after the English version is confirmed live — not part of this staging package.
+## Still needed for wearemucho.com/record (needs Craft CMS access)
+Per `mucho-record-build-spec.docx`: footer link to `/record`, the page served at `/record` (Twig template), production `robots.txt` allowing the chosen search and AI crawlers, and `/record` in the SEOmatic sitemap.

@@ -1,8 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- REPLACE the <loc> URL below with your actual staging URL once deployed. -->
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://REPLACE-WITH-YOUR-STAGING-DOMAIN/</loc>
-    <lastmod>2026-07-23</lastmod>
+    <loc>https://muchoai.github.io/mucho-record-staging/</loc>
+    <lastmod>2026-10-21</lastmod>
+  </url>
+  <url>
+    <loc>https://muchoai.github.io/mucho-record-staging/es/</loc>
+    <lastmod>2026-10-22</lastmod>
+  </url>
+  <url>
+    <loc>https://muchoai.github.io/mucho-record-staging/ca/</loc>
+    <lastmod>2026-10-22</lastmod>
   </url>
 </urlset>
