@@ -1,0 +1,5 @@
+{
+  "about": "Source for the Awards, Talks and Media lists on The Record. The sheet is 'Ai visibility sheet' in Mucho's Google account; only its Public tab is published. See tools/build_lists.py.",
+  "sheet": "https://docs.google.com/spreadsheets/d/1sN45gG18wwTRsBCPcv3SK5qI3baWlUTIJQ9F4E8Ooaw/edit",
+  "csv_url": "https://docs.google.com/spreadsheets/d/e/2PACX-1vSmC0TC9ZtycE5SbzJyhT1245DmmsrNCkFAf1kWoi42slUqnRzQiG44rskl1XMdByRH_NPsUvHhy27v/pub?gid=4&single=true&output=csv"
+}

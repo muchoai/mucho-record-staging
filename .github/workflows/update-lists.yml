@@ -1,0 +1,76 @@
+# Rebuilds the Awards, Talks and Media lists on The Record from the sheet
+# ("Ai visibility sheet", Public tab). See tools/build_lists.py.
+#
+# Runs when:
+#   - someone uses "The Record → Publish now" in the sheet (sends the Public tab with the request), or
+#   - every morning at about 07:17 Madrid time, as a backup (reads the published CSV).
+# If the sheet has a problem, or tools/record_check.py fails, nothing is published
+# and GitHub emails the run's failure.
+
+name: Update lists from sheet
+
+on:
+  workflow_dispatch:
+    inputs:
+      csv_b64:
+        description: "Public tab as base64 CSV (sent by the sheet's Publish button). Leave empty to read the published CSV."
+        required: false
+        default: ""
+  schedule:
+    - cron: "17 6 * * *"
+
+permissions:
+  contents: write
+  pages: write
+
+concurrency:
+  group: update-lists
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Get the sheet data
+        env:
+          CSV_B64: ${{ inputs.csv_b64 }}
+        run: |
+          if [ -n "$CSV_B64" ]; then
+            echo "Using the data sent by the Publish button."
+            printf '%s' "$CSV_B64" | base64 -d > lists.csv
+          else
+            echo "Reading the published CSV."
+            url=$(python3 -c 'import json; print(json.load(open("tools/record-lists.json"))["csv_url"])')
+            curl -fsSL --retry 3 "$url" -o lists.csv
+          fi
+          head -1 lists.csv
+
+      - name: Build the lists
+        id: build
+        run: python3 tools/build_lists.py --csv lists.csv
+
+      - name: Check the page
+        if: steps.build.outputs.changed == 'true'
+        run: python3 tools/record_check.py
+
+      - name: Publish
+        if: steps.build.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git config user.name "The Record (sheet)"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html es/index.html ca/index.html sitemap.xml
+          git commit -m "Lists: update from sheet ($(TZ=Europe/Madrid date +%F))" -m "$(cat lists-summary.txt)"
+          git push
+          # pushes made by this job don't always start a GitHub Pages build, so ask for one
+          gh api -X POST "repos/${GITHUB_REPOSITORY}/pages/builds" >/dev/null || echo "Pages build request not accepted; the push may still deploy."
+          echo "Published: $(cat lists-summary.txt)" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Nothing to publish
+        if: steps.build.outputs.changed != 'true'
+        run: |
+          echo "No change: the page already matches the sheet." >> "$GITHUB_STEP_SUMMARY"

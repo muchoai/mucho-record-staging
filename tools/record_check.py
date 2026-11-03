@@ -350,6 +350,9 @@ def content(P):
             missing = [n for n in named if n not in client_row]
             report(G, "PASS" if named and not missing else "FAIL", f"{f}: every client in the JSON-LD description is in the visible Clients row"
                    + (f"; missing {missing}" if missing else ""))
+        for sec in ("awards", "talks", "media"):
+            ok = p.src.count(f"<!-- list:{sec}:start -->") == 1 and p.src.count(f"<!-- list:{sec}:end -->") == 1
+            report(G, "PASS" if ok else "FAIL", f"{f}: {sec} list markers present once (tools/build_lists.py)")
         off = len(p.src[:p.src.find('id="facts"')].encode())
         report(G, "PASS" if 0 < off <= FIRST_FACT_MAX else bad, f"{f}: first fact at byte {off:,} (target ≤ {FIRST_FACT_MAX:,}){pend}")
     aw_links = {f: tuple(re.findall(r'href="([^"]+)"', re.search(r'<section class="sec" id="awards">.*?</section>', p.src, re.S).group()))
