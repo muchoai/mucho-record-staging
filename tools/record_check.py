@@ -38,6 +38,11 @@ SECTION_ORDER = ["facts", "not-clients", "fit", "method", "awards", "people",
                  "narrative", "verify", "log", "index", "cases"]
 A1_DONE = {"index.html"}  # files already on the A1 layout; add es/ca when they are done
 FIRST_FACT_MAX = 25000    # bytes before id="facts"
+# A2/A3/A5 (Nov 2026 content): files already updated; add es/ca when they are done
+CONTENT_DONE = {"index.html"}
+APPROVED_A3 = {"Principal": ["Pricipal"], "Toulouse": ["Toulousse"], "DocMorris": ["Doc Morris"],
+               "development": ["developement"], "led by": ["is lead by"], "Gran Laus": ["Grand Laus"]}
+AI_TOOL_NAMES = ["ChatGPT", "Gemini", "Claude", "DeepSeek", "Perplexity"]
 SEARCH_BOTS = ["Googlebot", "Bingbot", "OAI-SearchBot", "Claude-SearchBot", "PerplexityBot"]
 UAS = {
     "Googlebot": "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)",
@@ -319,6 +324,27 @@ def content(P):
         rail = re.findall(r'href="#([^"]+)"', nav.group()) if nav else []
         report(G, "PASS" if secs == SECTION_ORDER else bad, f"{f}: section order{pend}" + ("" if secs == SECTION_ORDER else f"; found {secs}"))
         report(G, "PASS" if rail == secs else "FAIL", f"{f}: Contents rail follows section order")
+        bad2 = "FAIL" if f in CONTENT_DONE else "WARN"
+        pend2 = "" if f in CONTENT_DONE else " (Nov content pending)"
+        for good, bads in APPROVED_A3.items():
+            found = {b: p.src.count(b) for b in bads if b in p.src}
+            report(G, bad2 if found else "PASS", f"{f}: approved spelling '{good}'{pend2}" + (f"; found {found}" if found else ""))
+        vis = " ".join(" ".join(p.text).split())
+        ai = [n for n in AI_TOOL_NAMES if re.search(r"\b" + n + r"\b", vis)]
+        report(G, bad2 if ai else "PASS", f"{f}: no AI tool names in visible text{pend2}" + (f"; found {ai}" if ai else ""))
+        report(G, bad2 if "[date]" in vis else "PASS", f"{f}: no [date] placeholders{pend2}")
+        ph = p.src.count('href="#"')
+        report(G, bad2 if ph else "PASS", f"{f}: no placeholder links{pend2}" + (f"; {ph} left" if ph else ""))
+        if f in CONTENT_DONE:
+            laus = "1 Gran Laus, 12 Laus" in vis
+            report(G, "PASS" if laus else "FAIL", f"{f}: awards read '1 Gran Laus, 12 Laus' (M10)")
+            offices = "Mucho has two offices" in vis and "does not have offices in New York, Paris or Melbourne" in vis
+            report(G, "PASS" if offices else "FAIL", f"{f}: Offices row states two offices and none in New York, Paris or Melbourne")
+            m = re.search(r"Clients include (.+?)\. ", org_desc(p))
+            named = [x.strip() for x in re.split(r",\s*|\s+and\s+", m.group(1))] if m else []
+            missing = [n for n in named if n not in client_row]
+            report(G, "PASS" if named and not missing else "FAIL", f"{f}: every client in the JSON-LD description is in the visible Clients row"
+                   + (f"; missing {missing}" if missing else ""))
         off = len(p.src[:p.src.find('id="facts"')].encode())
         report(G, "PASS" if 0 < off <= FIRST_FACT_MAX else bad, f"{f}: first fact at byte {off:,} (target ≤ {FIRST_FACT_MAX:,}){pend}")
     if len(lists) > 1:
