@@ -33,6 +33,11 @@ VOID = {"area", "base", "br", "col", "embed", "hr", "img", "input", "link", "met
 BLOCKING = {"noindex", "none", "nofollow"}
 # Exact strings only: approved spellings and names that must not appear.
 APPROVED = {"Peter Nicks": ["Pete Nicks"]}
+# A1 (facts-first layout): section order on the page and in the Contents rail
+SECTION_ORDER = ["facts", "not-clients", "fit", "method", "awards", "people",
+                 "narrative", "verify", "log", "index", "cases"]
+A1_DONE = {"index.html"}  # files already on the A1 layout; add es/ca when they are done
+FIRST_FACT_MAX = 25000    # bytes before id="facts"
 SEARCH_BOTS = ["Googlebot", "Bingbot", "OAI-SearchBot", "Claude-SearchBot", "PerplexityBot"]
 UAS = {
     "Googlebot": "Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)",
@@ -298,11 +303,24 @@ def content(P):
         for good, bads in APPROVED.items():
             found = {b: p.src.count(b) for b in bads if b in p.src}
             report(G, "FAIL" if found else "PASS", f"{f}: approved spelling '{good}'" + (f"; found {found}" if found else ""))
+        arts = p.src.count("<article")
+        h2 = re.search(r'<section class="sec" id="cases">\s*<h2>([^<]*)</h2>', p.src)
+        num = re.search(r"\d+", h2.group(1)) if h2 else None
+        jump = re.search(r'<ol class="industry-jump">(.*?)</ol>', p.src, re.S)
+        by_ind = sum(map(int, re.findall(r"<span>(\d+)</span>", jump.group(1)))) if jump else None
+        ok = num is not None and int(num.group()) == arts == by_ind
+        report(G, "PASS" if ok else "FAIL", f"{f}: case counts agree (heading {num.group() if num else None}, industries {by_ind}, articles {arts})")
+        bad = "FAIL" if f in A1_DONE else "WARN"
+        pend = "" if f in A1_DONE else " (A1 pending)"
         wp = [d for d in p.jsonld if isinstance(d, dict) and d.get("@type") == "WebPage"]
-        if wp:
-            me = wp[0].get("mainEntity", {})
-            n, items, arts = me.get("numberOfItems"), len(me.get("itemListElement", [])), p.src.count("<article")
-            report(G, "PASS" if n == items == arts else "FAIL", f"{f}: case counts agree (numberOfItems {n}, list {items}, articles {arts})")
+        report(G, bad if wp and "mainEntity" in wp[0] else "PASS", f"{f}: no hidden case list in WebPage JSON-LD{pend}")
+        secs = re.findall(r'<section class="sec" id="([^"]+)"', p.src)
+        nav = re.search(r'<nav class="rail".*?</nav>', p.src, re.S)
+        rail = re.findall(r'href="#([^"]+)"', nav.group()) if nav else []
+        report(G, "PASS" if secs == SECTION_ORDER else bad, f"{f}: section order{pend}" + ("" if secs == SECTION_ORDER else f"; found {secs}"))
+        report(G, "PASS" if rail == secs else "FAIL", f"{f}: Contents rail follows section order")
+        off = len(p.src[:p.src.find('id="facts"')].encode())
+        report(G, "PASS" if 0 < off <= FIRST_FACT_MAX else bad, f"{f}: first fact at byte {off:,} (target ≤ {FIRST_FACT_MAX:,}){pend}")
     if len(lists) > 1:
         vals = list(lists.values())
         report(G, "PASS" if all(v[0] == vals[0][0] for v in vals) else "FAIL", "JSON-LD 'never' lists identical across languages")
