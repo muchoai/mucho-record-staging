@@ -36,10 +36,14 @@ APPROVED = {"Peter Nicks": ["Pete Nicks"]}
 # A1 (facts-first layout): section order on the page and in the Contents rail
 SECTION_ORDER = ["facts", "not-clients", "fit", "method", "awards", "people",
                  "narrative", "verify", "log", "index", "cases"]
-A1_DONE = {"index.html"}  # files already on the A1 layout; add es/ca when they are done
+A1_DONE = {"index.html", "es/index.html", "ca/index.html"}  # files on the A1 layout
 FIRST_FACT_MAX = 25000    # bytes before id="facts"
 # A2/A3/A5 (Nov 2026 content): files already updated; add es/ca when they are done
-CONTENT_DONE = {"index.html"}
+CONTENT_DONE = {"index.html", "es/index.html", "ca/index.html"}
+PLACEHOLDERS = ["[date]", "[fecha]", "[data]"]
+OFFICES = {"en": ("Mucho has two offices", "does not have offices in New York, Paris or Melbourne"),
+           "es": ("Mucho tiene dos oficinas", "no tiene oficinas en Nueva York, París ni Melbourne"),
+           "ca": ("Mucho té dues oficines", "no té oficines a Nova York, París ni Melbourne")}
 APPROVED_A3 = {"Principal": ["Pricipal"], "Toulouse": ["Toulousse"], "DocMorris": ["Doc Morris"],
                "development": ["developement"], "led by": ["is lead by"], "Gran Laus": ["Grand Laus"]}
 AI_TOOL_NAMES = ["ChatGPT", "Gemini", "Claude", "DeepSeek", "Perplexity"]
@@ -332,21 +336,27 @@ def content(P):
         vis = " ".join(" ".join(p.text).split())
         ai = [n for n in AI_TOOL_NAMES if re.search(r"\b" + n + r"\b", vis)]
         report(G, bad2 if ai else "PASS", f"{f}: no AI tool names in visible text{pend2}" + (f"; found {ai}" if ai else ""))
-        report(G, bad2 if "[date]" in vis else "PASS", f"{f}: no [date] placeholders{pend2}")
+        ph_found = [x for x in PLACEHOLDERS if x in vis]
+        report(G, bad2 if ph_found else "PASS", f"{f}: no [date] placeholders{pend2}" + (f"; found {ph_found}" if ph_found else ""))
         ph = p.src.count('href="#"')
         report(G, bad2 if ph else "PASS", f"{f}: no placeholder links{pend2}" + (f"; {ph} left" if ph else ""))
         if f in CONTENT_DONE:
             laus = "1 Gran Laus, 12 Laus" in vis
             report(G, "PASS" if laus else "FAIL", f"{f}: awards read '1 Gran Laus, 12 Laus' (M10)")
-            offices = "Mucho has two offices" in vis and "does not have offices in New York, Paris or Melbourne" in vis
+            offices = all(x in vis for x in OFFICES.get(lang, OFFICES["en"]))
             report(G, "PASS" if offices else "FAIL", f"{f}: Offices row states two offices and none in New York, Paris or Melbourne")
-            m = re.search(r"Clients include (.+?)\. ", org_desc(p))
-            named = [x.strip() for x in re.split(r",\s*|\s+and\s+", m.group(1))] if m else []
+            m = re.search(r"(?:Clients include|Entre sus clientes están|Entre els seus clients hi ha) (.+?)\. ", org_desc(p))
+            named = [x.strip() for x in re.split(r",\s*|\s+(?:and|y|i)\s+", m.group(1))] if m else []
             missing = [n for n in named if n not in client_row]
             report(G, "PASS" if named and not missing else "FAIL", f"{f}: every client in the JSON-LD description is in the visible Clients row"
                    + (f"; missing {missing}" if missing else ""))
         off = len(p.src[:p.src.find('id="facts"')].encode())
         report(G, "PASS" if 0 < off <= FIRST_FACT_MAX else bad, f"{f}: first fact at byte {off:,} (target ≤ {FIRST_FACT_MAX:,}){pend}")
+    aw_links = {f: tuple(re.findall(r'href="([^"]+)"', re.search(r'<section class="sec" id="awards">.*?</section>', p.src, re.S).group()))
+                for lang, (f, p) in P.items() if p is not None and '<section class="sec" id="awards">' in p.src}
+    if len(aw_links) > 1:
+        same = len(set(aw_links.values())) == 1
+        report(G, "PASS" if same else "FAIL", "awards links identical across languages")
     if len(lists) > 1:
         vals = list(lists.values())
         report(G, "PASS" if all(v[0] == vals[0][0] for v in vals) else "FAIL", "JSON-LD 'never' lists identical across languages")
